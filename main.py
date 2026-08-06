@@ -31,6 +31,9 @@ def main():
     hud = HUD()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    bg_original = pygame.image.load("./images/bg.jpg").convert()
+    bg = pygame.transform.scale(bg_original, (SCREEN_WIDTH, SCREEN_HEIGHT))
+    bg.set_alpha(100)
 
     dt = 0.0
     clock = pygame.time.Clock()
@@ -64,6 +67,7 @@ def main():
                         hud.add_score(asteroid)
 
         screen.fill("black")
+        screen.blit(bg, (0, 0))
 
         for d in drawable:
             d.draw(screen)

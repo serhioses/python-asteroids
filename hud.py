@@ -1,23 +1,32 @@
 import pygame
-from constants import SCORE_POINTS, SCORE_BASE
+from constants import SCORE_POINTS, SCORE_BASE, SCREEN_HEIGHT
 from asteroid import Asteroid
+from player import Player
 
-class Scoring:
+class HUD:
     def __init__(self):
-        self.score = 0.0
+        self.__score = 0.0
         self.__font = pygame.font.Font(None, 24)
 
-    def draw(self, screen: pygame.Surface) -> None:
-        text_surface = self.__font.render(f"Score: {int(self.score)}", True, "white");
-        screen.blit(text_surface, (20, 20))
+    def draw(self, screen: pygame.Surface, player: Player) -> None:
+        self.show_score(screen)
+        self.show_lives(screen, player)
 
     def update(self, dt: float) -> None:
-        self.score += dt;
+        self.__score += dt;
 
     def add_score(self, asteroid: Asteroid) -> None:
         radius = asteroid.radius
         points = SCORE_POINTS.get(radius, SCORE_BASE)
-        self.score += points
+        self.__score += points
+
+    def show_score(self, screen: pygame.Surface) -> None:
+        text_surface = self.__font.render(f"Score: {int(self.__score)}", True, "white");
+        screen.blit(text_surface, (20, 20))
+
+    def show_lives(self, screen: pygame.Surface, player: Player) -> None:
+        text_surface = self.__font.render(f"Lives: {player.get_lives()}", True, "white")
+        screen.blit(text_surface, (20, SCREEN_HEIGHT - 30))
 
 # import math
 # import pygame

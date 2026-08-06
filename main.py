@@ -6,7 +6,7 @@ from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
-from scoring import Scoring
+from hud import HUD
 
 def main():
     print(f"Starting Asteroids with pygame version: {pygame.version.ver}")
@@ -28,7 +28,7 @@ def main():
     Shot.containers = (shots, drawable, updatable)
 
     # Scoring.containers = (drawable, updatable)
-    scoring_sys = Scoring()
+    hud = HUD()
 
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
@@ -45,27 +45,29 @@ def main():
 
         if running:
             updatable.update(dt)
-            scoring_sys.update(dt)
+            hud.update(dt)
 
             for asteroid in asteroids:
-                if asteroid.collides_with(player):
+                if asteroid.collides_with(player) and player.is_vulnerable():
                     log_event("player_hit")
-                    player.kill()
-                    print("Game over!")
-                    running = False
-                    break
+                    remaining_lives = player.take_hit()
+                    if remaining_lives <= 0:
+                        player.kill()
+                        print("Game over!")
+                        running = False
+                        break
                 for shot in shots:
                     if asteroid.collides_with(shot):
                         log_event("asteroid_shot")
                         shot.kill()
                         asteroid.split()
-                        scoring_sys.add_score(asteroid)
+                        hud.add_score(asteroid)
 
         screen.fill("black")
 
         for d in drawable:
             d.draw(screen)
-        scoring_sys.draw(screen)
+        hud.draw(screen, player)
 
         pygame.display.flip()
         dt = clock.tick(60) / 1000

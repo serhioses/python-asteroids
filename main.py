@@ -6,11 +6,14 @@ from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
+from scoring import Scoring
 
 def main():
     print(f"Starting Asteroids with pygame version: {pygame.version.ver}")
     print(f"Screen width: {SCREEN_WIDTH}")
     print(f"Screen height: {SCREEN_HEIGHT}")
+
+    pygame.init()
 
     updatable: pygame.sprite.Group = pygame.sprite.Group()
     drawable: pygame.sprite.Group = pygame.sprite.Group()
@@ -24,11 +27,14 @@ def main():
     AsteroidField()
     Shot.containers = (shots, drawable, updatable)
 
-    pygame.init()
+    # Scoring.containers = (drawable, updatable)
+    scoring_sys = Scoring()
+
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
     dt = 0.0
     clock = pygame.time.Clock()
+    running = True
 
     while True:
         log_state()
@@ -37,23 +43,29 @@ def main():
             if event.type == pygame.QUIT:
                 return
 
-        updatable.update(dt)
+        if running:
+            updatable.update(dt)
+            scoring_sys.update(dt)
 
-        for a in asteroids:
-            if a.collides_with(player):
-                log_event("player_hit")
-                print("Game over!")
-                sys.exit()
-            for s in shots:
-                if a.collides_with(s):
-                    log_event("asteroid_shot")
-                    s.kill()
-                    a.split()
+            for asteroid in asteroids:
+                if asteroid.collides_with(player):
+                    log_event("player_hit")
+                    player.kill()
+                    print("Game over!")
+                    running = False
+                    break
+                for shot in shots:
+                    if asteroid.collides_with(shot):
+                        log_event("asteroid_shot")
+                        shot.kill()
+                        asteroid.split()
+                        scoring_sys.add_score(asteroid)
 
         screen.fill("black")
 
         for d in drawable:
             d.draw(screen)
+        scoring_sys.draw(screen)
 
         pygame.display.flip()
         dt = clock.tick(60) / 1000

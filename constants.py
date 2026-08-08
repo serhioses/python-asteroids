@@ -23,3 +23,5 @@ SCORE_POINTS: dict[float, float] = {}
 for i in range(1, ASTEROID_KINDS + 1):
     radius = ASTEROID_MIN_RADIUS * i
     SCORE_POINTS[radius] = SCORE_BASE * (ASTEROID_KINDS + 1 - i)
+
+EXPLOSION_SPEED = 80

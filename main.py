@@ -1,11 +1,15 @@
 import sys
 import pygame
+import random
 from logger import log_state, log_event
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
+from explosion import Explosion
+from debris import Debris
+from particle import Particle
 from hud import HUD
 
 def main():
@@ -26,6 +30,9 @@ def main():
     AsteroidField.containers = updatable
     AsteroidField()
     Shot.containers = (shots, drawable, updatable)
+    Explosion.containers = (drawable, updatable)
+    Debris.containers = (drawable, updatable)
+    Particle.containers = (drawable, updatable)
 
     # Scoring.containers = (drawable, updatable)
     hud = HUD()
@@ -64,6 +71,10 @@ def main():
                         log_event("asteroid_shot")
                         shot.kill()
                         asteroid.split()
+                        # Explosion(asteroid.position.x, asteroid.position.y, asteroid.radius)
+                        for i in range(0, random.randint(20, 30)):
+                            # Debris(asteroid.position.x, asteroid.position.y)
+                            Particle(asteroid.position.x, asteroid.position.y)
                         hud.add_score(asteroid)
 
         screen.fill("black")

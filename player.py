@@ -1,5 +1,5 @@
 import pygame
-from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN_SECONDS, PLAYER_LIVES, PLAYER_INVULNERABILITY_SECONDS
+from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN_SECONDS, PLAYER_LIVES, PLAYER_INVULNERABILITY_SECONDS, PLAYER_ACCELERATION, PLAYER_MAX_SPEED
 from circleshape import CircleShape
 from shot import Shot
 
@@ -12,6 +12,7 @@ class Player(CircleShape):
         self.__shoot_cooldown = 0
         self.__lives = PLAYER_LIVES
         self.__invulnerability_cooldown = 0
+        self.__speed = 0
 
     def triangle(self) -> list[pygame.Vector2]:
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -43,16 +44,22 @@ class Player(CircleShape):
         if keys[pygame.K_d]:
             self.rotate(dt)
         if keys[pygame.K_w]:
-            self.move(dt)
+            self.move(dt, 1)
         if keys[pygame.K_s]:
-            self.move(-dt)
+            self.move(dt, -1)
         if keys[pygame.K_SPACE]:
             self.shoot()
+        if not keys[pygame.K_w] and not keys[pygame.K_s]:
+            self.__speed = 0
 
-    def move(self, dt: float) -> None:
+    def move(self, dt: float, direction: int) -> None:
         unit_vector = pygame.Vector2(0, 1)
         rotated_vector = unit_vector.rotate(self.rotation)
-        rotated_with_speed_vector = rotated_vector * PLAYER_SPEED * dt
+        self.__speed += PLAYER_ACCELERATION * dt
+            
+        if self.__speed > PLAYER_MAX_SPEED:
+            self.__speed = PLAYER_MAX_SPEED
+        rotated_with_speed_vector = rotated_vector * self.__speed * dt * direction
         self.position += rotated_with_speed_vector
 
     def shoot(self) -> None:
@@ -73,6 +80,7 @@ class Player(CircleShape):
         self.rotation = 0
         self.__shoot_cooldown = PLAYER_INVULNERABILITY_SECONDS
         self.__invulnerability_cooldown = PLAYER_INVULNERABILITY_SECONDS
+        self.__speed = 0
 
     def get_lives(self) -> int:
         return self.__lives

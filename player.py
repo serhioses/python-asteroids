@@ -1,18 +1,19 @@
 import pygame
-from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN_SECONDS, PLAYER_LIVES, PLAYER_INVULNERABILITY_SECONDS, PLAYER_ACCELERATION, PLAYER_MAX_SPEED
+from constants import PLAYER_RADIUS, LINE_WIDTH, PLAYER_TURN_SPEED, PLAYER_LIVES, PLAYER_INVULNERABILITY_SECONDS, PLAYER_ACCELERATION, PLAYER_MAX_SPEED
 from circleshape import CircleShape
 from shot import Shot
+from weapon import Weapon, Pistol, MachineGun, Shotgun
 
 class Player(CircleShape):
-    def __init__(self, x: float, y: float) -> None:
+    def __init__(self, x: float, y: float, weapon: Weapon) -> None:
         super().__init__(x, y, PLAYER_RADIUS)
         self.__initial_x = x
         self.__initial_y = y
         self.rotation = 0
-        self.__shoot_cooldown = 0
         self.__lives = PLAYER_LIVES
         self.__invulnerability_cooldown = 0
         self.__speed = 0
+        self.__weapon = weapon
 
     def triangle(self) -> list[pygame.Vector2]:
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -35,8 +36,6 @@ class Player(CircleShape):
 
     def update(self, dt: float) -> None:
         keys = pygame.key.get_pressed()
-        self.__shoot_cooldown -= dt
-        self.__shoot_cooldown = max(self.__shoot_cooldown, 0)
         self.__invulnerability_cooldown = max(self.__invulnerability_cooldown - dt, 0);
 
         if keys[pygame.K_a]:
@@ -63,11 +62,7 @@ class Player(CircleShape):
         self.position += rotated_with_speed_vector
 
     def shoot(self) -> None:
-        if self.__shoot_cooldown > 0:
-            return
-        self.__shoot_cooldown = PLAYER_SHOOT_COOLDOWN_SECONDS
-        shot = Shot(self.position.x, self.position.y)
-        shot.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
+        self.__weapon.fire(self.position, self.rotation)
 
     def take_hit(self) -> int:
         self.__lives -= 1
@@ -78,7 +73,7 @@ class Player(CircleShape):
     def respawn(self) -> None:
         self.position: pygame.Vector2 = pygame.Vector2(self.__initial_x, self.__initial_y)
         self.rotation = 0
-        self.__shoot_cooldown = PLAYER_INVULNERABILITY_SECONDS
+        self.__weapon.freeze(PLAYER_INVULNERABILITY_SECONDS)
         self.__invulnerability_cooldown = PLAYER_INVULNERABILITY_SECONDS
         self.__speed = 0
 
@@ -87,3 +82,19 @@ class Player(CircleShape):
 
     def is_vulnerable(self) -> bool:
         return self.__invulnerability_cooldown == 0
+
+    def get_weapon(self) -> Weapon:
+        return self.__weapon
+
+    def set_weapon(self, n: int) -> None:
+        new_weapon: Weapon | None = None
+        if n == 1:
+            new_weapon = Pistol()
+        elif n == 2:
+            new_weapon = MachineGun()
+        elif n == 3:
+            new_weapon = Shotgun()
+        if new_weapon and not isinstance(self.__weapon, new_weapon.__class__):
+            old_weapon = self.__weapon
+            self.__weapon = new_weapon
+            old_weapon.kill()

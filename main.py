@@ -1,4 +1,3 @@
-import sys
 import pygame
 import random
 from logger import log_state, log_event
@@ -6,6 +5,7 @@ from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
+from weapon import Weapon, Pistol
 from shot import Shot
 from explosion import Explosion
 from debris import Debris
@@ -24,8 +24,10 @@ def main():
     asteroids: pygame.sprite.Group = pygame.sprite.Group()
     shots: pygame.sprite.Group = pygame.sprite.Group()
 
+    Weapon.containers = updatable
+    weapon = Pistol()
     Player.containers = (updatable, drawable)
-    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, weapon)
     Asteroid.containers = (asteroids, updatable, drawable)
     AsteroidField.containers = updatable
     AsteroidField()
@@ -52,6 +54,13 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    player.set_weapon(1)
+                elif event.key == pygame.K_2:
+                    player.set_weapon(2)
+                elif event.key == pygame.K_3:
+                    player.set_weapon(3)
 
         if running:
             updatable.update(dt)
@@ -76,6 +85,7 @@ def main():
                             # Debris(asteroid.position.x, asteroid.position.y)
                             Particle(asteroid.position.x, asteroid.position.y)
                         hud.add_score(asteroid)
+                        break
 
         screen.fill("black")
         screen.blit(bg, (0, 0))
@@ -86,7 +96,6 @@ def main():
 
         pygame.display.flip()
         dt = clock.tick(60) / 1000
-
 
 if __name__ == "__main__":
     main()

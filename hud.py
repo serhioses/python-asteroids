@@ -1,5 +1,5 @@
 import pygame
-from constants import SCORE_POINTS, SCORE_BASE, SCREEN_HEIGHT
+from constants import SCORE_POINTS, SCORE_BASE, SCREEN_WIDTH, SCREEN_HEIGHT
 from asteroid import Asteroid
 from player import Player
 
@@ -7,10 +7,13 @@ class HUD:
     def __init__(self):
         self.__score = 0.0
         self.__font = pygame.font.Font(None, 24)
+        self.__weapon_text_sequence = ["Weapons: ", "(1)Pistol, ", "(2)MachineGun, ", "(3)Shotgun"]
+        self.__weapon_text_width = self.__font.size("Weapons: (1)Pistol, (2)MachineGun, (3)Shotgun")[0]
 
     def draw(self, screen: pygame.Surface, player: Player) -> None:
         self.show_score(screen)
         self.show_lives(screen, player)
+        self.show_weapons(screen, player)
 
     def update(self, dt: float) -> None:
         self.__score += dt;
@@ -27,6 +30,15 @@ class HUD:
     def show_lives(self, screen: pygame.Surface, player: Player) -> None:
         text_surface = self.__font.render(f"Lives: {player.get_lives()}", True, "white")
         screen.blit(text_surface, (20, SCREEN_HEIGHT - 30))
+
+    def show_weapons(self, screen: pygame.Surface, player: Player) -> None:
+        current_x = SCREEN_WIDTH - 30 - self.__weapon_text_width
+        player_weapon = player.get_weapon().get_name()
+        for text in self.__weapon_text_sequence:
+            resolved_color = "green" if player_weapon in text else "white"
+            text_surface = self.__font.render(text, True, resolved_color)
+            screen.blit(text_surface, (current_x, SCREEN_HEIGHT - 30))
+            current_x += text_surface.get_width()
 
 # import math
 # import pygame
